@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using DataServiceLayer.Entities;
+using DataServiceLayer.Dtos;
 
 namespace DataServiceLayer
 {
@@ -91,23 +93,21 @@ namespace DataServiceLayer
             // So, instead of .Find(id) which is a method on the DbSet<T> class that is uesfull if we just whant the T (generic class) as that actual object. However, if we need to bring along object nested from references, this limits us as .Find() is not (AFAIK) a part of LINQ, whereby it can only be used if we have a DbSet and want a particular element by primary id.
         }
 
-        public sealed record ProductByCategoryDto(int Id, string Name, int UnitPrice, string QuantityPerUnit, int UnitsInStock, string CategoryName);
-        public List<ProductByCategoryDto> GetProductByCategory(int catId)
+        public List<ProductByCategory> GetProductByCategory(int catId)
         {
             return ctx.Products
                 .AsNoTracking()
                 .Where(p => p.CategoryId == catId)
                 .Include(p => p.Category)
-                .Select(p => new ProductByCategoryDto(p.Id, p.Name, p.UnitPrice, p.QuantityPerUnit, p.UnitsInStock, p.Category.Name))
+                .Select(p => new ProductByCategory(p.Id, p.Name, p.UnitPrice, p.QuantityPerUnit, p.UnitsInStock, p.Category.Name))
                 .ToList();
         }
 
-        public sealed record ProductByNameDto(string ProductName, string CategoryName);
-        public List<ProductByNameDto> GetProductByName(string substring)
+        public List<ProductByName> GetProductByName(string substring)
         {
             return ctx.Products.Include(p => p.Category)
                 .Where(p => p.Name.Contains(substring) == true) //order matters as Where clause does not work on the DTO unless it is in a DbSet<DTO>
-                .Select(p => new ProductByNameDto(p.Name, p.Category.Name))
+                .Select(p => new ProductByName(p.Name, p.Category.Name))
                 .ToList();
         }
 
@@ -194,53 +194,5 @@ namespace DataServiceLayer
             modelBuilder.Entity<OrderDetails>().Navigation(d => d.Order);
             modelBuilder.Entity<OrderDetails>().Navigation(d => d.Product);
         }
-    }
-
-    // EF classes
-
-    public class Order
-    {
-        public int Id { get; set; }
-        public DateTime Date { get; set; }
-        public DateTime Required { get; set; }
-        public DateTime? Shipped { get; set; } //has null values
-        public int Freight { get; set; }
-        public string ShipName { get; set; }
-        public string ShipCity { get; set; }
-
-        public ICollection<OrderDetails> OrderDetails { get; set; }
-    }
-
-    public class OrderDetails
-    {
-        public int OrderId { get; set; }
-        public int ProductId { get; set; }
-        public int UnitPrice { get; set; }
-        public int Quantity { get; set; }
-        public int Discount { get; set; }
-        public Order Order { get; set; }
-        public Product Product { get; set; }
-    }
-
-    public class Product
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public int UnitPrice { get; set; }
-        public string QuantityPerUnit { get; set; }
-        public int UnitsInStock { get; set; }
-        public int CategoryId { get; set; }
-        public Category Category { get; set; }
-
-        public ICollection<OrderDetails> OrderDetails { get; set; }
-    }
-
-    public class Category
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-
-        public ICollection<Product> Products { get; set; } // NOTE: might need initializion as shown in Perez p. 24 (Unsure)
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Xunit;
 using DataServiceLayer;
+using DataServiceLayer.Entities; // Had to add since this is not in the namespace already. Might be solved in general by doing something in the .csproj
 
 namespace Assignment4.Tests
 {
