@@ -1,4 +1,5 @@
 using DataServiceLayer;
+using Mapster;
 
 namespace WebServiceLayer;
 
@@ -9,6 +10,8 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddSingleton<IDataService, DataService>();
 
         // Add services to the container.
 

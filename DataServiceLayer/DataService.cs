@@ -10,7 +10,7 @@ using DataServiceLayer.Dtos;
 
 namespace DataServiceLayer
 {
-    public class DataService
+    public class DataService : IDataService
     {
         private NorthwindContext ctx;
 
